@@ -1,42 +1,185 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-</head>
-<body>
-    <!-- login page -->
-    <h2>Login Page</h2>
-    <form id="loginForm">
-        <label>
-            Email:
-            <input type="email" id="email" placeholder="enter your email">
-        </label><br><br>
-        <label>
-            Password:
-            <input type="password" placeholder="password">
-        </label><br><br>
-        <button type="submit">Login</button>
-    </form>
-    <script>
-        const valid_ID="admin@gmail.com";
-        const valid_Password="admin1234";
-        document.getElementById("loginForm").addEventListener("submit",function(e)=>{
-            e.preventDefault();
+    <title>Admin Page</title>
+    <style>
+        body{
+            margin:0;
+            font-family:'Courier New', Courier, monospace;
 
-            const email=document.getElementById("email").value;
-            const password=document.getElementById("password").value;
+        }
+        .navbar{
+            background: #333;
+            color:#fff;
+            padding:10px;
+            display:flex;
+            align-items: center;
+            gap:10px;
 
-            if(email==valid_ID && password===valid_Password){
-                alert("login success");
-                window.location.href="admin.html";
+        }
+        .navbar select, .navbar button{
+             margin-left: 5px;
+        }
+        .layout{
+            display:flex;
+            min-height:100vh;
+        }
+        .sidebar{
+            width:260px;
+            padding:15px;
+            
+        }
+    </style>
+ </head>
+ <body>
+    <!-- navbar and filters -->
+     <div class="navbar">
+        <span><strong>Admin Dashboard</strong></span>
+        <span>Category:</span>
+        <select id="filterCategory">
+            <option value="All">All</option>
+            <option value="Auto">Auto</option>
+            <option value="Car">Car</option>
+            <option value="Truck">Truck</optin>
+            <option value="Bus">Bus</option>
+        </select>
+        <span>Availability</span>
+        <select id="filterAvailability">
+            <option value="All">All</option>
+            <option value="Availability">Availability</option>
+            <option value="Unavailability">Unavailability</option>
+        </select>
+        <button id="clearfilterbtn">Clear Filter</button>
+     </div>
+     <div class="layout">
+        <!-- sidebar -->
+         <aside class="sidebar">
+            <h3>Fleet Form</h3>
+            <form id="fleetForm">
+                <div>
+                    <label>Register No of Vehicles:</label><br>
+                    <input type="text" id="regNo">
 
-            }
-            else{
-                alert("Wrong email or password");
-            }
-        });
-    </script>
-</body>
-</html>
+                </div>
+                <br>
+                <div>
+                    <label>Category:</label>
+                    <select id="category">
+                        <option value="">Select</option>
+                        <option>Auto</option>
+                        <option>Car</option>
+                        <option>Truck</option>
+                        <option>Bus</option>
+                    </select>
+                </div>
+                <br>
+                <div>
+                    <label>Driver Name:</label><br>
+                    <input type="text" id="driverName">
+
+                </div>
+                <br>
+                <div>
+                    <label>
+                       <input type="checkbox" id="Available">
+                       Is available
+                    </label>
+                </div>
+                <br>
+                <button type="submit">Add Fleet</button>
+            </form>
+         </aside>
+         <!-- main content  -->
+          <main class="main">
+            <h3>Fleet Cards</h3>
+            <div id="cardsContainer" class="cards"></div>
+          </main>
+     </div>
+     <script>
+        const fleetForm=document.getElementById("fleetForm");
+        const cardsContainer=document.getElementById("cardsContainer");
+        const filterCategory=document.getElementById("filterCategory");
+        const filterAvailability=document.getElementById("filterAvailability");
+        const clearfilterbtn=document.getElementById("clearfilterbtn");
+        // for memory data 
+        let vehicles=[];
+        let nextId=1;
+        // image provided 
+        const VEHICLE_IMG="https://coding-platform.s3.amazonaws.com/dev/lms/tickets/5e80fcb6-3f8e-480c-945b-30a5359eb40e/JNmYjkVr3WOjsrbu.png"
+        function renderCards(){
+            cardsContainer.innerHTML="";
+            const selectedCtg=filterCategory.value;
+            const slectedAvail=filterAvailability.value;
+            const filtered=vahicles.filter(v=>{
+                let oktrue;
+                if(selectedCtg!=="All"){
+                    ok=ok && v.category===selectCtg;
+                }
+                if(selectAvail!=="All"){
+                    ok=ok && v.status===selectedAvail;
+                }
+                return ok;
+            });
+            filtered.forEach(v => {
+                const card=document.createElement("div");
+                card.className="card";
+                card.dataset.id=v.id;
+                card.innerHTML='<img src="${VEHICLE_IMG}"alt="vehicle image">
+        //         <p>Reg no:<span class="reg">${v.regNo}</span></p>
+        //         <p>Category:<span class="ctg">${v.category}</span></p>
+        //         <p>Driver:<span class="driver">${v.driverName}</span></p>
+        //         <p> Status:<span class="status">${v.status}</span></p>
+        //         <button class="updateDriverBtn">Update Driver</button>
+        //         <button class="changedAvailBtn">Change Availability</button>
+        //         <button class="deleteBtn">Delete vehicle</button>`;
+        //         cardsContainer.append(card);
+                
+        //     });
+        // }
+            // add fleet
+            fleetForm.addEventListener("submit",function(e){
+                e.preventDefault();
+                const regNo=document.getElementById("regNo").value.trim();
+                const category=document.getElementById("category").value.trim();
+                const driverName=document.getElementById("driverName").value.trim();
+                const Available=document.getElementById("Available").value.checked;
+                if(!regNo || !category || !driverName){
+                    alert("Please fill required fields");
+                    return;
+                }
+                vehicles.push({
+                    id:nextId++,
+                    regNo,
+                    category,driverName,
+                    status:Available?"Available":"Unavailable",
+                });
+                fleetForm.reset();
+                renderCards();
+
+            });
+
+            // cards button action 
+            cardsContainer.addEventListener("click",function(e){
+                const card=e.target.closest(".card");
+                if(!card) return;
+                const id=Number(card.dataset.id);
+                const vehicle=vehicles.find(v=>v.id===id);
+                if(!vehicle) return;
+                if(e.target.classList.contains("updateDriverBtn")){
+                    
+                }
+            })
+            ///filters
+            filterCategory.addEventListener("change",renderCards);
+            filterAvailability.addEventListener("change",renderCards);
+            clearFilterBtn.addEventListener("click",function(){
+                filterCategory.value="All";
+                filterAvailability.value="All";
+                renderCards();
+            });
+
+     </script>
+ </body>
+ </html>
